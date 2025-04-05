@@ -1,74 +1,98 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import '../globals.css'
+import { View, Text, ScrollView } from "react-native";
+import { cn } from "@/lib/utils"
+import TodoLists from "@/components/todo-lists";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+// Import mock data for the progress calculation
+const MOCK_TODOS = [
+  { id: "1", listId: "1", text: "Finish project proposal", completed: true },
+  { id: "2", listId: "1", text: "Schedule team meeting", completed: true },
+  { id: "3", listId: "1", text: "Review code changes", completed: false },
+  { id: "4", listId: "2", text: "Buy groceries", completed: true },
+  { id: "5", listId: "2", text: "Call mom", completed: true },
+  { id: "6", listId: "2", text: "Go for a run", completed: false },
+  { id: "7", listId: "3", text: "Complete React Native course", completed: false },
+  { id: "8", listId: "3", text: "Read NestJS documentation", completed: false },
+]
 
-export default function HomeScreen() {
+const MOCK_LISTS = [
+  { id: "1", name: "Work Tasks" },
+  { id: "2", name: "Personal" },
+  { id: "3", name: "Learning" },
+]
+export default function Home() {
+  const { toast } = useToast();
+
+  const handleAddList = (name: string) => {
+    // In a real app, this would call an API to create a new list
+    toast({
+      title: "List created",
+      description: `"${name}" has been created successfully.`,
+    })
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+    <ScrollView>
+      <View className="container mx-auto p-4 max-w-5xl">
+        <Card className="border-none" style={{
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: 0.3,
+          shadowRadius: 4.65,
+          elevation: 8, // Android 阴影
+        }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-3xl fibt-bold">
+              <Text className="text-2xl font-semibold leading-none tracking-tight">TaskMaster</Text>
+            </CardTitle>
+            <CardDescription>
+              <Text>Organize your tasks, get AI-powered insights</Text>
+            </CardDescription>
+            <View className="mt-4">
+              <View className="flex-row justify-between items-center mb-1">
+                <Text className="text-sm text-muted-foreground">Overall progress</Text>
+                <Text className="text-sm font-medium">
+                  {(() => {
+                    const totalTasks = MOCK_LISTS.reduce((acc, list) => {
+                      const listTasks = MOCK_TODOS.filter((todo) => todo.listId === list.id)
+                      return acc + listTasks.length
+                    }, 0)
+                    const completedTasks = MOCK_TODOS.filter((todo) => todo.completed).length
+                    return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+                  })()}%
+                </Text>
+              </View>
+              <View className="w-full bg-muted/50 rounded-full h-2">
+                <View
+                  className="bg-[#39d353] h-2 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${(() => {
+                      const totalTasks = MOCK_LISTS.reduce((acc, list) => {
+                        const listTasks = MOCK_TODOS.filter((todo) => todo.listId === list.id)
+                        return acc + listTasks.length
+                      }, 0)
+                      const completedTasks = MOCK_TODOS.filter((todo) => todo.completed).length
+                      return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+                    })()}%`,
+                  }}
+                ></View>
+              </View>
+            </View>
+          </CardHeader>
+          <CardContent>
+            <View
+              className="ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mt-0"
+            >
+              <TodoLists />
+            </View>
+          </CardContent>
+        </Card>
+      </View>
+    </ScrollView>
+  )
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
